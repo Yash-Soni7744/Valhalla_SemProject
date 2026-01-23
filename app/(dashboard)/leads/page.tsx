@@ -171,10 +171,13 @@ export default function LeadsPage() {
                         onChange={(e) => setProductFilter(e.target.value as any)}
                     >
                         <option value="All">All Products</option>
-                        <option value="Bra">Bra</option>
-                        <option value="Panty">Panty</option>
-                        <option value="Lingerie">Lingerie</option>
+                        <option value="Undergarments">Undergarments</option>
+                        <option value="Cushion Covers">Cushion Covers</option>
+                        <option value="Blankets">Blankets</option>
                         <option value="Bedsheet">Bedsheet</option>
+                        <option value="Curtains">Curtains</option>
+                        <option value="Towels">Towels</option>
+                        <option value="Bath Linen">Bath Linen</option>
                     </select>
                 </div>
             </div>

@@ -109,10 +109,13 @@ export default function LeadForm({ initialData, onSubmit, isEditing = false }: L
                         onChange={handleChange}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                        <option value="Bra">Bra</option>
-                        <option value="Panty">Panty</option>
-                        <option value="Lingerie">Lingerie</option>
+                        <option value="Undergarments">Undergarments</option>
+                        <option value="Cushion Covers">Cushion Covers</option>
+                        <option value="Blankets">Blankets</option>
                         <option value="Bedsheet">Bedsheet</option>
+                        <option value="Curtains">Curtains</option>
+                        <option value="Towels">Towels</option>
+                        <option value="Bath Linen">Bath Linen</option>
                     </select>
                 </div>
 

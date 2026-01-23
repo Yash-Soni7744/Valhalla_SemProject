@@ -11,7 +11,7 @@ export interface User {
 
 export type LeadStatus = 'New' | 'Contacted' | 'Follow-up' | 'Negotiation' | 'Converted' | 'Lost';
 
-export type ProductInterest = 'Bra' | 'Panty' | 'Lingerie' | 'Bedsheet';
+export type ProductInterest = 'Undergarments' | 'Cushion Covers' | 'Blankets' | 'Bedsheet' | 'Curtains' | 'Towels' | 'Bath Linen';
 
 export interface Lead {
     id: string;

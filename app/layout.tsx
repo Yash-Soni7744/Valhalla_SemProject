@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MiEstilo Leads CRM",
-  description: "Manufacturing CRM for Lingerie & Bedding",
+  description: "Manufacturing CRM for Garments & Bedding",
 };
 
 export default function RootLayout({

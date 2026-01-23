@@ -17,7 +17,7 @@ CREATE TABLE leads (
     phone TEXT NOT NULL,
     whatsapp TEXT,
     email TEXT,
-    product_interest TEXT CHECK (product_interest IN ('Bra', 'Panty', 'Lingerie', 'Bedsheet')) NOT NULL,
+    product_interest TEXT CHECK (product_interest IN ('Undergarments', 'Cushion Covers', 'Blankets', 'Bedsheet', 'Curtains', 'Towels', 'Bath Linen')) NOT NULL,
     quantity INTEGER,
     expected_price NUMERIC,
     lead_source TEXT,
