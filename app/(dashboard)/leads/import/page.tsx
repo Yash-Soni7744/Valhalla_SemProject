@@ -50,31 +50,90 @@ export default function ImportLeadsPage() {
 
     // Naive auto-mapping
     const processData = (data: any[]) => {
-        const mapped = data.map(row => {
-            // Try to fuzzy match common headers
-            // Keys in row might be "Company Name", "Phone No", etc.
-            const normalize = (key: string) => key.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalize = (key: string) =>
+            key.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+        const mapped = data.map(row => {
             const findValue = (keys: string[]) => {
                 for (const k of Object.keys(row)) {
-                    if (keys.includes(normalize(k))) return row[k];
+                    if (keys.includes(normalize(k))) {
+                        return row[k];
+                    }
                 }
                 return undefined;
             };
 
             return {
-                company_name: findValue(['companyname', 'company', 'businessname', 'name']) || row['Company'] || 'Unknown Company',
-                contact_person: findValue(['contactperson', 'contact', 'person', 'fullname']) || row['Contact'] || '-',
-                phone: findValue(['phone', 'phonenumber', 'mobile', 'whatsapp', 'cell']) || row['Phone'] || '0000000000',
-                email: findValue(['email', 'emailaddress', 'mail']) || '',
-                product_interest: findValue(['product', 'interest', 'category']) || 'Bra',
+                company_name:
+                    findValue(['companyname', 'company', 'businessname']) ||
+                    row['Company'] ||
+                    'Unknown Company',
+
+                contact_person:
+                    findValue(['contactperson', 'contact', 'fullname']) ||
+                    row['Contact'] ||
+                    '-',
+
+                phone:
+                    findValue([
+                        'phone',
+                        'phonenumber',
+                        'mobile',
+                        'whatsapp',
+                        'cell'
+                    ]) ||
+                    row['Phone'] ||
+                    '0000000000',
+
+                email:
+                    findValue(['email', 'emailaddress', 'mail']) || '',
+
+                product_interest:
+                    findValue([
+                        'productinterest',
+                        'product',
+                        'category',
+                        'productcategory'
+                    ]),
+
+                quantity:
+                    Number(
+                        findValue(['quantity', 'qty', 'count'])
+                    ) || 0,
+
+                expected_price:
+                    Number(
+                        findValue([
+                            'expectedprice',
+                            'expectedamount',
+                            'price',
+                            'amount',
+                            'value'
+                        ])
+                    ) || 0,
+
                 lead_source: 'Import',
-                city: findValue(['city', 'town', 'location']) || '',
-                status: 'New'
+
+                city:
+                    findValue(['city', 'town', 'location']) || '',
+
+                state:
+                    findValue(['state', 'region', 'province']) || '',
+
+                assigned_to:
+                    findValue(['assignedto', 'owner', 'salesperson']) || 'Admin',
+
+                status: 'New',
+
+                notes:
+                    findValue(['notes', 'remarks', 'comment']) || ''
             } as Partial<Lead>;
         });
+
         setMappedLeads(mapped);
     };
+
+
 
     const handleImport = async () => {
         setStep('importing');

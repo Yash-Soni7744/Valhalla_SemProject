@@ -115,21 +115,22 @@ export const createLead = async (lead: Partial<Lead>) => {
 };
 
 export const createLeads = async (leads: Partial<Lead>[]) => {
-    await delay(1000); // Simulate processing time
+    await delay(1000);
+
     const currentLeads = getStorage('leads');
+
     const newLeads = leads.map(lead => ({
         ...lead,
         id: Math.random().toString(36).substr(2, 9),
         created_at: new Date().toISOString(),
-        status: lead.status || 'New',
-        product_interest: lead.product_interest || 'Bra' // Default if missing
+        status: lead.status ?? 'New',
+        product_interest: lead.product_interest ?? 'Unknown'
     }));
 
-    // Append new leads
-    const updatedLeads = [...currentLeads, ...newLeads];
-    setStorage('leads', updatedLeads);
+    setStorage('leads', [...currentLeads, ...newLeads]);
     return newLeads.length;
 };
+
 
 export const bulkAssignLeads = async (leadIds: string[], userId: string) => {
     await delay(500);

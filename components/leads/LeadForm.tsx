@@ -25,7 +25,7 @@ export default function LeadForm({ initialData, onSubmit, isEditing = false }: L
         phone: '',
         whatsapp: '',
         email: '',
-        product_interest: 'Bra',
+        product_interest: 'Undergarments' as ProductInterest,
         quantity: 0,
         expected_price: 0,
         lead_source: '',
