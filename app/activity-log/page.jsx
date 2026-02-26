@@ -115,3 +115,121 @@ export default function ActivityLogPage() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-9 placeholder:italic"
+                        />
+                    </div>
+                </div>
+
+                {/* C. MAIN LOG TABLE */}
+                <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50/50 border-b text-[10px] uppercase text-gray-500 font-black tracking-widest font-mono">
+                                <tr>
+                                    <th className="px-6 py-4">Action Type / Time</th>
+                                    <th className="px-6 py-4">Performed By</th>
+                                    <th className="px-6 py-4">Related Lead</th>
+                                    <th className="px-6 py-4">Details / Notes</th>
+                                    {currentUser?.role === 'admin' && <th className="px-6 py-4 text-right">Edit</th>}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 italic">
+                                {loading ? (
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400">Searching history log...</td></tr>
+                                ) : filteredActivities.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">No activity found yet.</td></tr>
+                                ) : (
+                                    filteredActivities.map((activity) => (
+                                        <tr key={activity.id} className="hover:bg-gray-50/50 transition-colors">
+                                            
+                                            {/* Column 1: What happened and When */}
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-gray-900 flex items-center gap-2 not-italic">
+                                                    <div className={`p-1 rounded bg-slate-100 border`}>
+                                                        <Clock className="w-3.5 h-3.5 text-slate-600" />
+                                                    </div>
+                                                    {activity.type}
+                                                </div>
+                                                <div className="text-[10px] text-gray-400 mt-1 font-mono uppercase font-bold">
+                                                    {activity.date} @ {activity.timestamp}
+                                                </div>
+                                            </td>
+
+                                            {/* Column 2: Who did it */}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-black not-italic border border-blue-200">
+                                                        {activity.employee_name.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-900 flex items-center gap-1.5 not-italic">
+                                                            {activity.employee_name}
+                                                            {activity.is_owner && (
+                                                                <span className="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter border border-green-200">Owner</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-[10px] text-gray-400 font-mono tracking-tighter uppercase font-bold">Emp ID: {activity.employee_id}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            {/* Column 3: Which lead was affected */}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-1.5 text-gray-900 font-bold not-italic">
+                                                    <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                                                    {activity.company_name}
+                                                </div>
+                                                <div className="text-xs text-gray-500 mt-1 flex flex-col gap-0.5 font-medium">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <UserIcon className="w-3 h-3 text-gray-300" />
+                                                        {activity.contact_person}
+                                                    </span>
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Phone className="w-3 h-3 text-gray-300" />
+                                                        {activity.contact_no}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-2 inline-flex items-center bg-blue-50 text-blue-700 text-[9px] px-1.5 py-0.5 rounded font-black uppercase border border-blue-100 italic">
+                                                    Source: {activity.lead_source || 'Direct'}
+                                                </div>
+                                            </td>
+
+                                            {/* Column 4: Notes and specific details */}
+                                            <td className="px-6 py-4">
+                                                {/* EDIT MODE: Only if you clicked the edit icon */}
+                                                {editingId === activity.id ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <Input
+                                                            value={editNotes}
+                                                            onChange={(e) => setEditNotes(e.target.value)}
+                                                            className="h-8 text-xs min-w-[200px] border-primary"
+                                                            autoFocus
+                                                        />
+                                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-green-600" onClick={() => handleSaveEdit(activity.id)}>
+                                                            <Check className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600" onClick={() => setEditingId(null)}>
+                                                            <X className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    /* DISPLAY MODE: Click the text to see full details */
+                                                    <div
+                                                        className="text-gray-600 text-xs max-w-[250px] cursor-pointer hover:text-primary group transition-all"
+                                                        onClick={() => setViewingNotes(activity)}
+                                                    >
+                                                        <div className="truncate font-medium group-hover:underline">
+                                                            {activity.notes || `No extra notes for this ${activity.type.toLowerCase()} event.`}
+                                                        </div>
+                                                        <span className="text-[9px] text-gray-300 uppercase font-black tracking-widest">(Click to read more)</span>
+                                                    </div>
+                                                )}
+                                            </td>
+
+                                            {/* Column 5: Edit button (Visible only to Admins) */}
+                                            {currentUser?.role === 'admin' && (
+                                                <td className="px-6 py-4 text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                                                        onClick={() => {
