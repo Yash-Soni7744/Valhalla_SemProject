@@ -233,3 +233,56 @@ export default function ActivityLogPage() {
                                                         size="sm"
                                                         className="h-8 w-8 p-0 hover:bg-gray-100"
                                                         onClick={() => {
+                                                            setEditingId(activity.id);
+                                                            setEditNotes(activity.notes || '');
+                                                        }}
+                                                    >
+                                                        <Edit2 className="h-4 w-4 text-gray-400" />
+                                                    </Button>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* D. POPUP MODAL: Shows full text details when a row is clicked */}
+                {viewingNotes && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={() => setViewingNotes(null)}>
+                        <Card className="w-full max-w-md shadow-2xl overflow-hidden border-2 border-primary/10" onClick={(e) => e.stopPropagation()}>
+                            <CardHeader className="flex flex-row items-center justify-between border-b pb-4 bg-gray-50/50">
+                                <div>
+                                    <CardTitle className="text-xl font-black text-primary">Log Event Details</CardTitle>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{viewingNotes.type} Log Entry</p>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => setViewingNotes(null)} className="h-8 w-8 p-0">
+                                    <X className="w-4 h-4" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-5">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Lead Context</label>
+                                    <p className="text-sm text-gray-900 font-bold">{viewingNotes.company_name} <span className="text-xs font-normal text-gray-400">({viewingNotes.contact_person})</span></p>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase tracking-widest font-black text-gray-400">Detailed Action History</label>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 leading-relaxed min-h-[120px] whitespace-pre-wrap italic shadow-inner">
+                                        {viewingNotes.notes || `This ${viewingNotes.type} was recorded automatically by the system.`}
+                                    </div>
+                                </div>
+                                <div className="text-[9px] text-gray-400 italic text-right">
+                                    Logged at: {viewingNotes.date} {viewingNotes.timestamp}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+            </div>
+        </DashboardLayout>
+    );
+}
+
+
