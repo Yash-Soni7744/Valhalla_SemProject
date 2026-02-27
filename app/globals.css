@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  /* Base */
+  --background: #f8fafc; /* Slate 50 */
+  --foreground: #0f172a; /* Slate 900 */
+  
+  /* Primary Brand - Deep Navy */
+  --primary: #1e293b; 
+  --primary-foreground: #ffffff;
+
+  /* Secondary - Soft Gold/Accent */
+  --secondary: #f1f5f9; /* Slate 100 */
+  --secondary-foreground: #0f172a;
+
+  /* Accent for actions */
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
+
+  /* Destructive */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* Cards & Surfaces */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --border: #e2e8f0;
