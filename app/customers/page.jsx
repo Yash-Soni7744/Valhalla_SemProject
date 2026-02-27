@@ -181,3 +181,67 @@ export default function CustomersPage() {
                 </div>
 
                 {/* C. CUSTOMERS DATA TABLE */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-gray-50 border-b font-mono uppercase text-[10px] tracking-widest text-gray-500 font-black">
+                                <tr>
+                                    <th className="px-6 py-4">Company Profile</th>
+                                    <th className="px-6 py-4">Quantity</th>
+                                    <th className="px-6 py-4">Revenue Generated</th>
+                                    <th className="px-6 py-4">Onboarding Date</th>
+                                    <th className="px-6 py-4 text-right">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 italic">
+                                {loading ? (
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400">Searching the database...</td></tr>
+                                ) : filteredCustomers.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400">No customers match your filters.</td></tr>
+                                ) : (
+                                    filteredCustomers.map(c => (
+                                        <tr key={c.id} className="hover:bg-purple-50/30 transition-colors">
+                                            {/* Column 1: Company Name */}
+                                            <td className="px-6 py-4 text-gray-900 flex items-center gap-3 not-italic">
+                                                <div className="p-2 bg-purple-100 rounded-full text-purple-700 border border-purple-200">
+                                                    <ShoppingBag className="w-4 h-4" />
+                                                </div>
+                                                <span className="font-black text-lg">{c.company_name}</span>
+                                            </td>
+                                            {/* Column 2: Orders Count */}
+                                            <td className="px-6 py-4 font-bold text-gray-600 not-italic">
+                                                {c.total_orders} Shipments
+                                            </td>
+                                            {/* Column 3: Money Value */}
+                                            <td className="px-6 py-4 text-green-700 font-black text-lg not-italic">
+                                                ₹{c.total_order_value?.toLocaleString() || '0'}
+                                            </td>
+                                            {/* Column 4: Date */}
+                                            <td className="px-6 py-4 text-gray-500 font-mono text-xs">
+                                                {new Date(c.created_at).toLocaleDateString()}
+                                            </td>
+                                            {/* Column 5: Trash Button */}
+                                            <td className="px-6 py-4 text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-red-200 hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => handleDelete(c.id)}
+                                                    title="Delete Record"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+}
+
+
