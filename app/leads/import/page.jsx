@@ -163,3 +163,98 @@ export default function ImportLeadsPage() {
                             <FileUpload onFileSelect={handleFileSelect} />
                             <div className="flex justify-center gap-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 p-3 rounded-lg border border-dashed">
                                 <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Smart Mapping</span>
+                                <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Auto Validation</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 2: PREVIEW SECTION */}
+                    {step === 'preview' && (
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between border-b pb-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Previewing: <span className="text-primary">{fileName}</span></h3>
+                                    <p className="text-sm font-medium text-gray-500">System detected <span className="text-black font-bold">{mappedLeads.length}</span> records for import.</p>
+                                </div>
+                            </div>
+
+                            <div className="border rounded-lg overflow-hidden max-h-[400px] overflow-y-auto shadow-inner bg-gray-50/30">
+                                <table className="w-full text-xs text-left">
+                                    <thead className="bg-gray-100/80 text-[10px] uppercase font-bold text-gray-600 sticky top-0 border-b">
+                                        <tr>
+                                            <th className="px-4 py-3">Company Name</th>
+                                            <th className="px-4 py-3">Contact</th>
+                                            <th className="px-4 py-3">Phone No.</th>
+                                            <th className="px-4 py-3">Email</th>
+                                            <th className="px-4 py-3">Interest</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 font-medium italic">
+                                        {mappedLeads.slice(0, 15).map((lead, i) => (
+                                            <tr key={i} className="bg-white hover:bg-gray-50/50">
+                                                <td className="px-4 py-3 font-bold text-gray-900 not-italic">{lead.company_name}</td>
+                                                <td className="px-4 py-3">{lead.contact_person}</td>
+                                                <td className="px-4 py-3 text-gray-500 font-mono tracking-tighter">{lead.phone}</td>
+                                                <td className="px-4 py-3 text-gray-500">{lead.email || '-'}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className="inline-flex px-2 py-0.5 text-[9px] font-bold rounded-full bg-slate-100 text-slate-700 uppercase border">
+                                                        {lead.product_interest}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {mappedLeads.length > 15 && (
+                                    <div className="px-4 py-3 bg-gray-100/50 text-[10px] font-bold text-center text-gray-400 border-t tracking-widest uppercase">
+                                        ... showing top 15 rows of {mappedLeads.length} total ...
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4">
+                                <Button variant="outline" onClick={() => { setStep('upload'); setMappedLeads([]); }}>Change File</Button>
+                                <Button onClick={handleImport} className="gap-2 font-bold px-8">
+                                    <UploadCloud className="w-4 h-4" />
+                                    CONFIRM & IMPORT
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 2.5: IMPORTING ANIMATION */}
+                    {step === 'importing' && (
+                        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                            <div className="relative w-20 h-20">
+                                <div className="absolute inset-0 border-8 border-gray-100 rounded-full"></div>
+                                <div className="absolute inset-0 border-8 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Processing Database...</h3>
+                            <p className="text-gray-400 italic font-medium">Please do not refresh the page while we save your data.</p>
+                        </div>
+                    )}
+
+                    {/* STEP 3: SUCCESS SECTION */}
+                    {step === 'success' && (
+                        <div className="flex flex-col items-center justify-center h-80 space-y-6 text-center">
+                            <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center border-4 border-green-200">
+                                <CheckCircle2 className="w-12 h-12" />
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">Success!</h3>
+                                <p className="text-gray-500 font-bold italic">Successfully injected {stats.success} new leads into your CRM pipeline.</p>
+                            </div>
+                            <div className="flex gap-4 pt-4">
+                                <Button variant="outline" className="font-bold" onClick={() => { setStep('upload'); setMappedLeads([]); }}>Import More Files</Button>
+                                <Button className="font-bold px-10" onClick={() => router.push('/leads')}>GO TO LEAD LIST</Button>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+
+}
+
