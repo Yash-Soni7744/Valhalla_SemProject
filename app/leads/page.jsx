@@ -203,3 +203,121 @@ export default function LeadsPage() {
 
                 {/* C. SEARCH AND FILTERS SECTION */}
                 <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                            placeholder="Search by Company Name or Phone Number..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        {/* Status Dropdown */}
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none ring-offset-background"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="All">All Statuses</option>
+                            <option value="New">New Enquiry</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Follow-up">In Follow-up</option>
+                            <option value="Negotiation">In Negotiation</option>
+                            <option value="Converted">Converted (Customer)</option>
+                            <option value="Lost">Lost Lead</option>
+                        </select>
+                        {/* Product Dropdown */}
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none ring-offset-background"
+                            value={productFilter}
+                            onChange={(e) => setProductFilter(e.target.value)}
+                        >
+                            <option value="All">All Products</option>
+                            <option value="Undergarments">Undergarments</option>
+                            <option value="Cushion Covers">Cushion Covers</option>
+                            <option value="Blankets">Blankets</option>
+                            <option value="Bedsheet">Bedsheet</option>
+                            <option value="Curtains">Curtains</option>
+                            <option value="Towels">Towels</option>
+                            <option value="Bath Linen">Bath Linen</option>
+                        </select>
+                    </div>
+                </div>
+
+                {/* D. THE LEADS TABLE */}
+                <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b font-black">
+                                <tr>
+                                    <th className="px-6 py-4 w-10 text-center">
+                                        {/* Main Checkbox to select ALL visible leads */}
+                                        <input
+                                            type="checkbox"
+                                            checked={filteredLeads.length > 0 && selectedLeadIds.size === filteredLeads.length}
+                                            onChange={(e) => {
+                                                if (e.target.checked) setSelectedLeadIds(new Set(filteredLeads.map(l => l.id)));
+                                                else setSelectedLeadIds(new Set());
+                                            }}
+                                        />
+                                    </th>
+                                    <th className="px-6 py-4 text-primary">Company & Contact</th>
+                                    <th className="px-6 py-4">Product</th>
+                                    <th className="px-6 py-4">Status</th>
+                                    <th className="px-6 py-4">Source</th>
+                                    <th className="px-6 py-4 text-right">Settings</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {loading ? (
+                                    <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">Please wait, loading leads...</td></tr>
+                                ) : filteredLeads.length === 0 ? (
+                                    <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">No leads match your current filters.</td></tr>
+                                ) : (
+                                    filteredLeads.map((lead) => (
+                                        <tr key={lead.id} className={`hover:bg-gray-50 bg-white transition-colors ${selectedLeadIds.has(lead.id) ? 'bg-blue-50' : ''}`}>
+                                            <td className="px-6 py-4 text-center">
+                                                {/* Checkbox for identifying a single row */}
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedLeadIds.has(lead.id)}
+                                                    onChange={(e) => {
+                                                        const newSet = new Set(selectedLeadIds);
+                                                        if (e.target.checked) newSet.add(lead.id);
+                                                        else newSet.delete(lead.id);
+                                                        setSelectedLeadIds(newSet);
+                                                    }}
+                                                />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-gray-900">{lead.company_name}</div>
+                                                <div className="text-xs text-gray-500">{lead.contact_person} • {lead.phone}</div>
+                                                {/* Tag showing who this lead belongs to */}
+                                                {lead.assigned_to_name && (
+                                                    <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700 border border-blue-100 font-bold uppercase">
+                                                        Assigned to: {lead.assigned_to_name}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-md bg-slate-100 border text-slate-700">
+                                                    {lead.product_interest}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {/* Status Color Badge Logic */}
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black border
+                                            ${lead.status === 'New' ? 'bg-blue-100 border-blue-200 text-blue-700' :
+                                                        lead.status === 'Converted' ? 'bg-green-100 border-green-200 text-green-700' :
+                                                            lead.status === 'Lost' ? 'bg-red-100 border-red-200 text-red-700' :
+                                                                'bg-yellow-100 border-yellow-200 text-yellow-700'}`}>
+                                                    {lead.status.toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500 italic">
+                                                {lead.lead_source || 'Direct Entry'}
+                                            </td>
+                                            <td className="px-6 py-4 text-right space-x-2">
+                                                {/* BUTTON: Edit Lead */}
+                                                <Link href={`/leads/${lead.id}`}>
