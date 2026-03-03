@@ -321,3 +321,50 @@ export default function LeadsPage() {
                                             <td className="px-6 py-4 text-right space-x-2">
                                                 {/* BUTTON: Edit Lead */}
                                                 <Link href={`/leads/${lead.id}`}>
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit Details">
+                                                        <Edit className="h-4 w-4 text-gray-500 hover:text-primary transition-colors" />
+                                                    </Button>
+                                                </Link>
+                                                {/* BUTTON: Call / Add Follow-up */}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    onClick={() => setSelectedLead(lead)}
+                                                    title="Add Call Note / Follow-up"
+                                                >
+                                                    <Phone className="h-4 w-4 text-blue-500 hover:text-blue-700 transition-colors" />
+                                                </Button>
+                                                {/* BUTTON: Delete Lead */}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    onClick={() => handleDelete(lead.id)}
+                                                    title="Delete Lead"
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-red-400 hover:text-red-600 transition-colors" />
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* E. POPUP MODAL: For adding follow-ups or call notes */}
+                {selectedLead && (
+                    <FollowUpModal
+                        isOpen={!!selectedLead}
+                        onClose={() => setSelectedLead(null)}
+                        lead={selectedLead}
+                    />
+                )}
+            </div>
+        </DashboardLayout>
+    );
+}
+
+
