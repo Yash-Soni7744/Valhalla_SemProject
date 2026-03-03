@@ -196,3 +196,34 @@ export default function DashboardPage() {
                                 </div>
                             )}
                         </CardContent>
+                    </Card>
+
+                    {/* QUICK NAVIGATION (Buttons to other pages) */}
+                    <Card className="col-span-3">
+                        <CardHeader>
+                            <CardTitle>Jump To Page</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {/* Link component helps move between pages without refreshing (SPA behavior) */}
+                            <Link href="/leads" className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors group">
+                                <span className="text-sm font-medium">View Full Lead List</span>
+                                <ArrowUpRight className="h-4 w-4 text-gray-400 group-hover:text-gray-900" />
+                            </Link>
+                            <Link href="/activity-log" className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors group">
+                                <span className="text-sm font-medium">Check Employee Work Log</span>
+                                <ArrowUpRight className="h-4 w-4 text-gray-400 group-hover:text-gray-900" />
+                            </Link>
+                            <Link href="/customers" className="w-full flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors group">
+                                <span className="text-sm font-medium">See Converted Customers</span>
+                                <ArrowUpRight className="h-4 w-4 text-gray-400 group-hover:text-gray-900" />
+                            </Link>
+                        </CardContent>
+                    </Card>
+
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+}
+
+
