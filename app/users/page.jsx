@@ -300,3 +300,67 @@ export default function UsersPage() {
                                     >
                                         <option value="sales">Sales (Employee)</option>
                                         <option value="admin">Administrator</option>
+                                    </select>
+                                </div>
+                                <Button
+                                    type="submit"
+                                    className="w-full mt-2"
+                                    disabled={!emailValid || creating}
+                                    isLoading={creating}
+                                >
+                                    Send Welcome Email
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
+
+                    {/* User List */}
+                    <Card className="md:col-span-2 shadow-sm">
+                        <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+                            <CardTitle className="text-lg">Registered Employees</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            <div className="space-y-3">
+                                {loading ? <p className="text-sm text-slate-500 text-center py-4">Loading team...</p> : users.map(u => (
+                                    <div key={u.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary overflow-hidden ring-1 ring-primary/20">
+                                                {u.profile_picture ? (
+                                                    <img src={u.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    u.name.charAt(0).toUpperCase()
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-gray-900 text-sm">{u.name}</p>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <p className="text-xs text-gray-500">{u.email}</p>
+                                                    <span className="text-[10px] font-mono font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 border border-slate-200">{u.employee_id}</span>
+                                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-sm uppercase font-bold tracking-wider ${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                                        {u.role}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {u.id !== currentUser?.id && (
+                                                <Button variant="ghost" size="sm" onClick={() => handleDelete(u.id)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 h-auto">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                            {u.id === currentUser?.id && (
+                                                <BadgeCheck className="w-5 h-5 text-emerald-500 mr-2" />
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </DashboardLayout>
+    );
+
+}
+
