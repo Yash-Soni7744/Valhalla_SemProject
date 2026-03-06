@@ -72,3 +72,19 @@ export default function DashboardLayout({ children }) {
     // THE ACTUAL LAYOUT
     return (
         <div className="flex h-screen bg-gray-50">
+            {/* 1. SIDEBAR: Only show the menu to Admin users. 
+                Regular employees don't need the full menu. */}
+            {user.role === 'admin' && <Sidebar />}
+            
+            {/* 2. MAIN CONTENT AREA: This is where the actual page content goes. */}
+            <main className="flex-1 overflow-auto bg-gray-50/50">
+                {/* We use a container to keep our content centered and pretty */}
+                <div className={user.role === 'admin' ? "container mx-auto max-w-7xl p-6 lg:p-8" : "w-full"}>
+                    {/* 'children' is a special React word for "put the page content right here" */}
+                    {children}
+                </div>
+            </main>
+        </div>
+    );
+}
+
