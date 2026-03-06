@@ -28,9 +28,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
         <div className="flex h-screen bg-gray-50">
-            <Sidebar />
+            {user.role === 'admin' && <Sidebar />}
             <main className="flex-1 overflow-auto bg-gray-50/50">
-                <div className="container mx-auto max-w-7xl p-6 lg:p-8">
+                <div className={`${user.role === 'admin' ? 'container mx-auto max-w-7xl p-6 lg:p-8' : ''}`}>
                     {children}
                 </div>
             </main>

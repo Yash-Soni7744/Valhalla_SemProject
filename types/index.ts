@@ -7,6 +7,7 @@ export interface User {
     password?: string; // Only for checking, not typically stored in frontend state
     role: UserRole;
     created_at?: string;
+    profile_picture?: string;
 }
 
 export type LeadStatus = 'New' | 'Contacted' | 'Follow-up' | 'Negotiation' | 'Converted' | 'Lost';

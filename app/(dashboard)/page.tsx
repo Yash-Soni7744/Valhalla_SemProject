@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Users, UserPlus, Phone, ShoppingBag, ArrowUpRight } from 'lucide-react';
 import { Lead } from '@/types';
 import Link from 'next/link';
+import { useAuth } from '@/components/providers/AuthProvider';
+import EmployeeDashboard from '@/components/dashboard/EmployeeDashboard';
 
 export default function DashboardPage() {
+    const { user } = useAuth();
     const [stats, setStats] = useState({
         totalLeads: 0,
         newLeads: 0,
@@ -32,6 +35,12 @@ export default function DashboardPage() {
         }
         loadData();
     }, []);
+
+    if (!user) return null;
+
+    if (user.role !== 'admin') {
+        return <EmployeeDashboard />;
+    }
 
     const statCards = [
         { title: 'Total Leads', value: stats.totalLeads, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },

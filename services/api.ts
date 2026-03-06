@@ -265,3 +265,13 @@ export const loginUserMock = async (email: string, pass: string) => {
     if (!user) return { error: 'Invalid credentials' };
     return { data: user, error: null };
 };
+
+export const loginEmployeeMock = async (email: string, pass: string) => {
+    await delay(800);
+    seedUsers();
+    const users = getStorage('users');
+    const user = users.find((u: User) => u.email === email && u.password === pass);
+    if (!user) return { error: 'Invalid credentials' };
+    if (user.role !== 'sales') return { error: 'Employee login requires employee role.' };
+    return { data: user, error: null };
+};
