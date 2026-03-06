@@ -1,13 +1,29 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getUsers, createUser, deleteUser } from '@/services/api';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { User } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { Trash2, ShieldAlert, BadgeCheck } from 'lucide-react';
+import { Trash2, ShieldAlert, BadgeCheck, CheckCircle2, XCircle, RefreshCw, Upload, Mail } from 'lucide-react';
+import Papa from 'papaparse';
+import emailjs from 'emailjs-com';
+
+const generatePassword = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+};
+
+// Replace these with actual Email JS credentials from the environment or dashboard
+const EMAILJS_SERVICE = 'service_ysn0voi';
+const EMAILJS_TEMPLATE = 'template_xjxlwjt';
+const EMAILJS_PUBKEY = 'YcgjfyNQcPNIYDfdr';
 
 export default function UsersPage() {
     const { user: currentUser } = useAuth();
@@ -15,8 +31,15 @@ export default function UsersPage() {
     const [loading, setLoading] = useState(true);
 
     // New User Form State
-    const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'sales' });
+    const [newName, setNewName] = useState('');
+    const [emailPrefix, setEmailPrefix] = useState('');
+    const [password, setPassword] = useState(generatePassword());
+    const [role, setRole] = useState('sales');
     const [creating, setCreating] = useState(false);
+
+    // Bulk Import state
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [importing, setImporting] = useState(false);
 
     useEffect(() => {
         loadUsers();
@@ -34,12 +57,50 @@ export default function UsersPage() {
         }
     };
 
+    const fullEmail = emailPrefix ? `${emailPrefix}@miestilo.com`.toLowerCase() : '';
+    const emailExists = users.some(u => u.email.toLowerCase() === fullEmail);
+    const emailValid = emailPrefix.length > 0 && !emailExists;
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!emailValid) {
+            alert("This email is already taken or invalid.");
+            return;
+        }
+
         setCreating(true);
         try {
-            await createUser(newUser as any);
-            setNewUser({ name: '', email: '', password: '', role: 'sales' });
+            const newUserObj = {
+                name: newName,
+                email: fullEmail,
+                password: password,
+                role: role as 'admin' | 'sales',
+            };
+
+            await createUser(newUserObj);
+
+            // Attempt to send the email via EmailJS (Will route to vyash4846@gmail.com for testing)
+            const templateParams = {
+                to_email: 'vyash4846@gmail.com', // Override for testing as requested
+                employee_name: newName,
+                employee_email: fullEmail,
+                employee_password: password,
+            };
+
+            try {
+                const response = await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, templateParams, EMAILJS_PUBKEY);
+                console.log('SUCCESS!', response.status, response.text);
+                alert(`User created! Welcome email successfully sent to testing address.`);
+            } catch (err) {
+                console.warn('EmailJS failed (Likely missing credentials, but user was created in system):', err);
+                alert(`User created! Note: Automated email failed (missing EmailJS credentials). The password is: ${password}`);
+            }
+
+            // Reset form
+            setNewName('');
+            setEmailPrefix('');
+            setPassword(generatePassword());
+            setRole('sales');
             loadUsers();
         } catch (e) {
             alert('Error creating user');
@@ -49,13 +110,53 @@ export default function UsersPage() {
     };
 
     const handleDelete = async (id: string) => {
-        // if (!confirm('Delete this user?')) return; // Removed for smoother interaction
         try {
             await deleteUser(id);
             setUsers(prev => prev.filter(u => u.id !== id));
         } catch (e) {
             alert('Error deleting user');
         }
+    };
+
+    const handleBulkImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setImporting(true);
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: async (results) => {
+                let successCount = 0;
+                for (const row of results.data as any[]) {
+                    if (row.name && row.email) {
+                        const rowEmail = row.email.toLowerCase();
+                        // Only add if not exists
+                        if (!users.some(u => u.email.toLowerCase() === rowEmail)) {
+                            const newPass = generatePassword();
+                            await createUser({
+                                name: row.name,
+                                email: rowEmail.endsWith('@miestilo.com') ? rowEmail : `${rowEmail}@miestilo.com`,
+                                password: row.password || newPass,
+                                role: (row.role || 'sales').toLowerCase() as any
+                            });
+                            successCount++;
+                            // We omit the emailJS send here during bulk import to prevent spam limits unless requested.
+                        }
+                    }
+                }
+                alert(`Successfully imported ${successCount} new users.`);
+                loadUsers();
+                setImporting(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            },
+            error: (error) => {
+                alert('Error parsing CSV file');
+                console.error(error);
+                setImporting(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        });
     };
 
     if (currentUser?.role !== 'admin') {
@@ -70,77 +171,158 @@ export default function UsersPage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">User Management</h1>
-                <p className="text-muted-foreground">Manage system access for your team.</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-gray-900">User Management</h1>
+                    <p className="text-muted-foreground">Manage system access and onboard employees.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleBulkImport}
+                    />
+                    <Button
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={importing}
+                        className="flex items-center gap-2"
+                    >
+                        <Upload className="w-4 h-4" />
+                        {importing ? 'Importing...' : 'Bulk Import CSV'}
+                    </Button>
+                </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
                 {/* Create User Form */}
-                <Card className="md:col-span-1 h-fit">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Add New User</CardTitle>
+                <Card className="md:col-span-1 border-primary/20 shadow-sm h-fit">
+                    <CardHeader className="bg-primary/5 border-b border-primary/10">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Mail className="w-5 h-5 text-primary" />
+                            Invite Employee
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                         <form onSubmit={handleCreate} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Name</label>
-                                <Input value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} required placeholder="Full Name" />
+                            <div className="space-y-2 relative">
+                                <label className="text-sm font-medium text-slate-700">Full Name</label>
+                                <Input
+                                    value={newName}
+                                    onChange={e => setNewName(e.target.value)}
+                                    required
+                                    placeholder="e.g. John Doe"
+                                    className="bg-white"
+                                />
                             </div>
+
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Email</label>
-                                <Input type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} required placeholder="email@company.com" />
+                                <label className="text-sm font-medium text-slate-700 flex justify-between items-center">
+                                    <span>Company Email</span>
+                                    {emailPrefix.length > 0 && (
+                                        emailExists ? (
+                                            <span className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full"><XCircle className="w-3 h-3" /> Taken</span>
+                                        ) : (
+                                            <span className="flex items-center gap-1 text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full"><CheckCircle2 className="w-3 h-3" /> Available</span>
+                                        )
+                                    )}
+                                </label>
+                                <div className="flex rounded-md shadow-sm">
+                                    <input
+                                        type="text"
+                                        value={emailPrefix}
+                                        onChange={e => setEmailPrefix(e.target.value.replace(/[^a-zA-Z0-9.-]/g, ''))}
+                                        required
+                                        placeholder="john.doe"
+                                        className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border text-sm focus:ring-primary focus:border-primary ${emailPrefix && emailExists ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                                    />
+                                    <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                        @miestilo.com
+                                    </span>
+                                </div>
                             </div>
+
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Password</label>
-                                <Input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} required placeholder="******" />
+                                <label className="text-sm font-medium text-slate-700 flex items-center justify-between">
+                                    Temporary Password
+                                    <button
+                                        type="button"
+                                        onClick={() => setPassword(generatePassword())}
+                                        className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+                                    >
+                                        <RefreshCw className="w-3 h-3" />
+                                        Regenerate
+                                    </button>
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                    className="font-mono bg-slate-50 text-slate-600"
+                                />
+                                <p className="text-xs text-slate-500">This password will be emailed to the new user.</p>
                             </div>
+
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Role</label>
+                                <label className="text-sm font-medium text-slate-700">Role</label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    value={newUser.role}
-                                    onChange={e => setNewUser({ ...newUser, role: e.target.value })}
+                                    className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm"
+                                    value={role}
+                                    onChange={e => setRole(e.target.value)}
                                 >
-                                    <option value="sales">Sales</option>
-                                    <option value="admin">Admin</option>
+                                    <option value="sales">Sales (Employee)</option>
+                                    <option value="admin">Administrator</option>
                                 </select>
                             </div>
-                            <Button type="submit" className="w-full" isLoading={creating}>Create User</Button>
+                            <Button
+                                type="submit"
+                                className="w-full mt-2"
+                                disabled={!emailValid || creating}
+                                isLoading={creating}
+                            >
+                                Send Welcome Email
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>
 
                 {/* User List */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="text-lg">All Users</CardTitle>
+                <Card className="md:col-span-2 shadow-sm">
+                    <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+                        <CardTitle className="text-lg">Registered Employees</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {loading ? <p>Loading...</p> : users.map(u => (
-                                <div key={u.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50/50">
+                    <CardContent className="pt-6">
+                        <div className="space-y-3">
+                            {loading ? <p className="text-sm text-slate-500 text-center py-4">Loading team...</p> : users.map(u => (
+                                <div key={u.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
-                                            {u.name.charAt(0)}
+                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary overflow-hidden ring-1 ring-primary/20">
+                                            {u.profile_picture ? (
+                                                <img src={u.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                u.name.charAt(0).toUpperCase()
+                                            )}
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-900">{u.name}</p>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm text-gray-500">{u.email}</p>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                            <p className="font-semibold text-gray-900 text-sm">{u.name}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-xs text-gray-500">{u.email}</p>
+                                                <span className={`text-[9px] px-1.5 py-0.5 rounded-sm uppercase font-bold tracking-wider ${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
                                                     {u.role}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                     {u.id !== currentUser?.id && (
-                                        <Button variant="ghost" size="sm" onClick={() => handleDelete(u.id)} className="text-red-500 hover:bg-red-50">
+                                        <Button variant="ghost" size="sm" onClick={() => handleDelete(u.id)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 h-auto">
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     )}
                                     {u.id === currentUser?.id && (
-                                        <BadgeCheck className="w-5 h-5 text-green-500" />
+                                        <BadgeCheck className="w-5 h-5 text-emerald-500 mr-2" />
                                     )}
                                 </div>
                             ))}

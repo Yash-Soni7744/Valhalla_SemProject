@@ -6,6 +6,8 @@ export interface User {
     email: string;
     password?: string; // Only for checking, not typically stored in frontend state
     role: UserRole;
+    phone?: string;
+    profile_picture?: string;
     created_at?: string;
 }
 

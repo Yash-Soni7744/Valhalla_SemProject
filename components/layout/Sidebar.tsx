@@ -11,6 +11,7 @@ import {
     NotebookPen, // For Leads
     ShoppingBag, // For Customers (Manufacturing context: Orders)
     Settings,
+    User,
     LogOut,
     ShieldAlert // For Admin Users
 } from 'lucide-react';
@@ -81,8 +82,12 @@ export default function Sidebar() {
 
             <div className="p-4 border-t border-slate-800">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white uppercase">
-                        {user?.name?.slice(0, 2) || 'US'}
+                    <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white uppercase overflow-hidden ring-2 ring-primary/20">
+                        {user?.profile_picture ? (
+                            <img src={user.profile_picture} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                            <span>{user?.name?.slice(0, 2) || 'US'}</span>
+                        )}
                     </div>
                     <div className="flex flex-col">
                         <span className="text-sm font-medium text-white">{user?.name}</span>

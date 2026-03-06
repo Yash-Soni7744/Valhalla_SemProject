@@ -265,3 +265,25 @@ export const loginUserMock = async (email: string, pass: string) => {
     if (!user) return { error: 'Invalid credentials' };
     return { data: user, error: null };
 };
+
+export const loginEmployeeMock = async (email: string, pass: string) => {
+    await delay(800);
+    seedUsers();
+
+    if (!email.toLowerCase().endsWith('@miestilo.com')) {
+        return { error: 'Employee login requires a valid @miestilo.com email address.' };
+    }
+
+    const users = getStorage('users');
+    const user = users.find((u: User) => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+        return { error: 'Account not found. Please contact your administrator.' };
+    }
+
+    if (user.password !== pass) {
+        return { error: 'Invalid password.' };
+    }
+
+    return { data: user, error: null };
+};

@@ -3,13 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/types';
 import { getStoredUser, setStoredUser, clearStoredUser } from '@/utils/auth';
-import { loginUserMock } from '@/services/api';
+import { loginUserMock, loginEmployeeMock } from '@/services/api';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
     login: (email: string, pass: string) => Promise<{ error?: string }>;
+    loginEmployee: (email: string, pass: string) => Promise<{ error?: string }>;
     logout: () => void;
 }
 
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
     login: async () => ({}),
+    loginEmployee: async () => ({}),
     logout: () => { },
 });
 
@@ -56,6 +58,27 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         }
     };
 
+    const loginEmployee = async (email: string, pass: string) => {
+        try {
+            const { data, error } = await loginEmployeeMock(email, pass);
+
+            if (error || !data) {
+                return { error: error || 'Failed to login as employee.' };
+            }
+
+            const validUser = data as User;
+            setUser(validUser);
+            setStoredUser(validUser);
+
+            // Redirect to dashboard
+            router.push('/');
+
+            return {};
+        } catch (err) {
+            return { error: 'Employee login failed. Please try again.' };
+        }
+    };
+
     const logout = () => {
         setUser(null);
         clearStoredUser();
@@ -63,7 +86,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, loginEmployee, logout }}>
             {children}
         </AuthContext.Provider>
     );
