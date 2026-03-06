@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { getDashboardStats, getLeads } from '@/services/api';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Users, UserPlus, Phone, ShoppingBag, ArrowUpRight } from 'lucide-react';
 import { Lead } from '@/types';
 import Link from 'next/link';
-import { useAuth } from '@/components/providers/AuthProvider';
+import { LeadStatusChart, LeadProductChart } from '@/components/dashboard/LeadCharts';
 import EmployeeDashboard from '@/components/dashboard/EmployeeDashboard';
 
 export default function DashboardPage() {
     const { user } = useAuth();
+
+    // Admin Dashboard State
     const [stats, setStats] = useState({
         totalLeads: 0,
         newLeads: 0,
@@ -18,14 +21,22 @@ export default function DashboardPage() {
         followUpsToday: 0
     });
     const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
+    const [allLeads, setAllLeads] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Only load standard dashboard data if admin
+        if (user?.role !== 'admin') {
+            setLoading(false);
+            return;
+        }
+
         async function loadData() {
             try {
                 const statsData = await getDashboardStats();
                 setStats(statsData);
                 const leadsData = await getLeads();
+                setAllLeads(leadsData);
                 setRecentLeads(leadsData.slice(0, 5)); // Top 5 recent
             } catch (error) {
                 console.error("Failed to load dashboard data", error);
@@ -34,7 +45,7 @@ export default function DashboardPage() {
             }
         }
         loadData();
-    }, []);
+    }, [user]);
 
     if (!user) return null;
 
@@ -72,6 +83,15 @@ export default function DashboardPage() {
                         </CardContent>
                     </Card>
                 ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <div className="col-span-1 md:col-span-3 lg:col-span-3">
+                    {loading ? <div className="h-[380px] bg-white rounded-xl border flex items-center justify-center text-sm text-gray-500">Loading charts...</div> : <LeadStatusChart leads={allLeads} />}
+                </div>
+                <div className="col-span-1 md:col-span-4 lg:col-span-4">
+                    {loading ? <div className="h-[380px] bg-white rounded-xl border flex items-center justify-center text-sm text-gray-500">Loading charts...</div> : <LeadProductChart leads={allLeads} />}
+                </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

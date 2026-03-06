@@ -47,7 +47,7 @@ export default function LeadsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        // if (!confirm('Are you sure you want to delete this lead?')) return;
+        if (!confirm('Are you sure you want to delete this lead?')) return;
         try {
             await deleteLead(id);
             setLeads(leads.filter(l => l.id !== id));
