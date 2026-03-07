@@ -105,3 +105,16 @@ export default function FollowUpModal({ isOpen, onClose, lead }) {
                         />
                     </div>
 
+                    {/* FOOTER BUTTONS */}
+                    <div className="pt-4 flex justify-end gap-3">
+                        <Button type="button" variant="ghost" onClick={onClose} className="font-bold text-gray-400">Nevermind</Button>
+                        <Button type="submit" isLoading={loading} className="px-8 font-black uppercase">Save & Close</Button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    );
+}
+
+
