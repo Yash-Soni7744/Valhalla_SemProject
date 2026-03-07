@@ -103,3 +103,121 @@ export default function LeadForm({ initialData, onSubmit, isEditing = false }) {
     };
 
     return (
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+            
+            {/* GRID LAYOUT: Splits the form into 2 columns on big screens */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* --- Section 1: Basic Identity --- */}
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Company Name *</label>
+                    <Input name="company_name" value={formData.company_name} onChange={handleChange} required placeholder="e.g. Acme Corp" className="font-bold" />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Primary Contact *</label>
+                    <Input name="contact_person" value={formData.contact_person} onChange={handleChange} required placeholder="Person's Full Name" />
+                </div>
+
+                {/* --- Section 2: Communication --- */}
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Mobile Number *</label>
+                    <Input name="phone" value={formData.phone} onChange={handleChange} required placeholder="10-digit number" />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">WhatsApp Link</label>
+                    <Input name="whatsapp" value={formData.whatsapp} onChange={handleChange} placeholder="Optional contact link" />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Official Email</label>
+                    <Input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="example@company.com" />
+                </div>
+
+                {/* --- Section 3: Product & Logistics --- */}
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Product Catalog Choice</label>
+                    <select
+                        name="product_interest"
+                        value={formData.product_interest}
+                        onChange={handleChange}
+                        className="flex h-10 w-full rounded-md border-2 border-slate-100 bg-white px-3 py-2 text-sm font-bold focus:border-primary focus:outline-none"
+                    >
+                        <option value="Undergarments">Undergarments</option>
+                        <option value="Cushion Covers">Cushion Covers</option>
+                        <option value="Blankets">Blankets</option>
+                        <option value="Bedsheet">Bedsheet</option>
+                        <option value="Curtains">Curtains</option>
+                        <option value="Towels">Towels</option>
+                        <option value="Bath Linen">Bath Linen</option>
+                    </select>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Order Quantity</label>
+                    <Input name="quantity" type="number" value={formData.quantity} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Offered Price (Per Unit)</label>
+                    <Input name="expected_price" type="number" value={formData.expected_price} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Market Source</label>
+                    <Input name="lead_source" placeholder="Indiamart / FB / Referral" value={formData.lead_source} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">City</label>
+                    <Input name="city" value={formData.city} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">State/Region</label>
+                    <Input name="state" value={formData.state} onChange={handleChange} />
+                </div>
+
+                {/* --- Section 4: Administration --- */}
+                
+                {/* ROLE-BASED UI: Only the boss (Admin) can pick an employee to handle this lead */}
+                {currentUser?.role === 'admin' && (
+                    <div className="space-y-2 md:col-span-2 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                        <label className="text-xs font-black uppercase text-blue-600 tracking-widest">Assign Ownership to Employee</label>
+                        <select
+                            name="assigned_to"
+                            value={formData.assigned_to}
+                            onChange={handleChange}
+                            className="mt-1 flex h-10 w-full rounded-md border-2 border-blue-200 bg-white px-3 py-2 text-sm font-bold focus:border-blue-500 focus:outline-none"
+                        >
+                            <option value="">-- Unassigned (Available for All) --</option>
+                            {users.map(u => (
+                                <option key={u.id} value={u.id}>{u.name} [{u.role.toUpperCase()}]</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
+                {/* STATUS TOGGLES: Fancy buttons instead of a boring dropdown */}
+                <div className="space-y-3 md:col-span-2 pt-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Lead Stage / Status</label>
+                    <div className="flex gap-2 flex-wrap">
+                        {['New', 'Contacted', 'Follow-up', 'Negotiation', 'Converted', 'Lost'].map(status => (
+                            <button
+                                key={status}
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, status: status }))}
+                                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tighter transition-all border-2 ${formData.status === status
+                                    ? 'bg-primary text-white border-primary shadow-md transform scale-105'
+                                    : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200 hover:text-gray-600'}`}
+                            >
+                                {status}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* FINAL NOTES */}
+                <div className="space-y-2 md:col-span-2">
+                    <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Internal Narrative / Context</label>
