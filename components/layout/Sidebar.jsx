@@ -100,3 +100,14 @@ export default function Sidebar() {
                         ) : (
                             <span>{user?.name?.slice(0, 2) || 'US'}</span>
                         )}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium text-white">{user?.name}</span>
+                        <span className="text-xs text-slate-500 capitalize">{user?.role}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
