@@ -221,3 +221,27 @@ export default function LeadForm({ initialData, onSubmit, isEditing = false }) {
                 {/* FINAL NOTES */}
                 <div className="space-y-2 md:col-span-2">
                     <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Internal Narrative / Context</label>
+                    <textarea
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        rows={4}
+                        placeholder="Add any specific requirements or call notes here..."
+                        className="flex min-h-[100px] w-full rounded-md border-2 border-slate-100 bg-white px-3 py-2 text-sm font-medium focus:border-primary focus:outline-none italic shadow-inner"
+                    />
+                </div>
+
+            </div>
+
+            {/* FORM FOOTER: Save or Cancel */}
+            <div className="flex justify-end gap-3 pt-6 border-t border-dashed">
+                <Button type="button" variant="ghost" onClick={() => router.back()} className="font-bold text-gray-400">Discard Changes</Button>
+                <Button type="submit" isLoading={loading} className="px-10 font-black uppercase">
+                    {isEditing ? 'Update Records' : 'Finalize & Save'}
+                </Button>
+            </div>
+        </form>
+    );
+}
+
+
