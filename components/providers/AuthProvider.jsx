@@ -92,3 +92,33 @@ export default function AuthProvider({ children }) {
             setStoredUser(data);
 
             // Redirect to dashboard
+            router.push('/');
+            return {};
+        } catch (err) {
+            return { error: 'Employee login system error.' };
+        }
+    };
+
+    /**
+     * LOGOUT FUNCTION:
+     * Clears all memory and kicks the user back to the login screen.
+     */
+    const logout = () => {
+        setUser(null); // Forget the user in React State
+        clearStoredUser(); // Wipe the browser's data for this site
+        router.push('/login'); // Send them back to the start!
+    };
+
+    /**
+     * WRAPPER:
+     * We wrap all the 'children' (the rest of the app) in this Provider.
+     * This makes 'user' and 'logout' available to every single page.
+     */
+    return (
+        <AuthContext.Provider value={{ user, loading, login, loginEmployee, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
+}
+
+
