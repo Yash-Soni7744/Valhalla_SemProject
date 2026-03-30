@@ -249,3 +249,121 @@ export const deleteFollowUp = async (id) => {
 export const getCustomers = async () => {
     await delay(400);
     return getStorage('customers');
+};
+
+export const deleteCustomer = async (id) => {
+    const customers = getStorage('customers');
+    setStorage('customers', customers.filter(c => c.id !== id));
+};
+
+// ==========================================
+// 5. LOGIN LOGIC (Simulated)
+// ==========================================
+
+export const loginUserMock = async (email, pass) => {
+    await delay(1000);
+    const users = getStorage('users');
+    const found = users.find(u => u.email === email && u.password === pass);
+    return found ? { data: found } : { error: 'Invalid Login' };
+};
+
+export const loginEmployeeMock = async (email, pass) => {
+    await delay(1000);
+    if (!email.endsWith('@miestilo.com')) return { error: 'Please use workplace email (@miestilo.com)' };
+    const users = getStorage('users');
+    const found = users.find(u => u.email === email && u.password === pass);
+    return found ? { data: found } : { error: 'Staff account not found.' };
+};
+
+// ==========================================
+// 6. ACTIVITY LOG (The Auditor)
+// ==========================================
+
+/**
+ * Purpose: This tracks who did what. Whenever you update a lead, 
+ * a "Log" entry is created so the Boss can see who changed the status.
+ */
+const syncActivities = async () => {
+    const leads = getStorage('leads');
+    const activities = getStorage('activities');
+    const users = getStorage('users');
+
+    let changed = false;
+    leads.forEach(lead => {
+        // Check if this lead already has a "Creation" log
+        const hasLog = activities.some(a => a.lead_id === lead.id && a.type === 'New Lead');
+        if (!hasLog) {
+            const staff = users.find(u => u.id === lead.assigned_to) || users[0];
+            const newLog = {
+                id: Math.random().toString(36).substr(2, 9),
+                type: 'New Lead',
+                employee_name: staff ? staff.name : 'Unknown',
+                employee_id: staff ? staff.employee_id : '---',
+                date: new Date(lead.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+                timestamp: new Date(lead.created_at || Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+                company_name: lead.company_name,
+                contact_person: lead.contact_person,
+                contact_no: lead.phone,
+                lead_source: lead.lead_source || 'Direct',
+                lead_id: lead.id,
+                is_owner: true,
+                notes: `System generated: Lead created and assigned to ${staff ? staff.name : 'Unknown'}.`
+            };
+            activities.push(newLog);
+            changed = true;
+        }
+    });
+
+    if (changed) setStorage('activities', activities);
+};
+
+export const getActivities = async () => {
+    await delay(500);
+    await syncActivities(); // Ensure every lead has at least one log
+    return getStorage('activities');
+};
+
+export const createActivity = async (action) => {
+    const logs = getStorage('activities');
+    const newLog = {
+        ...action,
+        id: Math.random().toString(36).substr(2, 9),
+        date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    };
+    logs.push(newLog);
+    setStorage('activities', logs);
+    return newLog;
+};
+
+
+export const updateActivity = async (id, updates) => {
+    await delay(300);
+    const logs = getStorage('activities');
+    const index = logs.findIndex(l => l.id === id);
+    if (index === -1) return null;
+    
+    logs[index] = { ...logs[index], ...updates };
+    setStorage('activities', logs);
+    return logs[index];
+};
+
+
+// Function used by pages to "Update a Lead + Create a Log entry" in one go
+export const updateLeadWithLog = async (leadId, updates, employeeId) => {
+    const updated = await updateLead(leadId, updates);
+    const users = getStorage('users');
+    const staff = users.find(u => u.id === employeeId);
+
+    // Create the Audit Log
+    await createActivity({
+        type: updates.status ? 'Status Update' : 'Profile Edit',
+        employee_name: staff ? staff.name : 'Unknown',
+        employee_id: staff ? staff.employee_id : '---',
+        company_name: updated.company_name,
+        contact_person: updated.contact_person,
+        contact_no: updated.phone,
+        lead_id: leadId,
+        notes: updates.status ? `Moved lead to stage: ${updates.status}` : 'Updated contact details'
+    });
+
