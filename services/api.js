@@ -131,3 +131,121 @@ export const getLead = async (id) => {
     const leads = getStorage('leads');
     return leads.find(l => l.id === id);
 };
+
+export const createLead = async (leadData) => {
+    await delay(500);
+    const leads = getStorage('leads');
+    const newLead = {
+        ...leadData,
+        id: 'lead_' + Math.random().toString(36).substr(2, 5),
+        created_at: new Date().toISOString(),
+        status: leadData.status || 'New'
+    };
+    setStorage('leads', [...leads, newLead]);
+    return newLead;
+};
+
+// Bulk Import logic (for Excel/CSV uploads)
+export const createLeads = async (multipleLeads) => {
+    await delay(1200);
+    const currentLeads = getStorage('leads');
+    const formatted = multipleLeads.map(l => ({
+        ...l,
+        id: 'lead_' + Math.random().toString(36).substr(2, 5),
+        created_at: new Date().toISOString(),
+        status: 'New'
+    }));
+    setStorage('leads', [...currentLeads, ...formatted]);
+    return formatted.length;
+};
+
+// Update a lead. IMPORTANT: If status becomes 'Converted', they move to Customers!
+export const updateLead = async (id, updates) => {
+    await delay(400);
+    const leads = getStorage('leads');
+    const index = leads.findIndex(l => l.id === id);
+    if (index === -1) return null;
+
+    const oldStatus = leads[index].status;
+    const updatedLead = { ...leads[index], ...updates };
+    leads[index] = updatedLead;
+    setStorage('leads', leads);
+
+    // CRM LOGIC: Converted Lead -> Paying Customer
+    if (updates.status === 'Converted' && oldStatus !== 'Converted') {
+        const customers = getStorage('customers');
+        const newCust = {
+            id: id,
+            company_name: updatedLead.company_name,
+            total_orders: 1,
+            total_order_value: updatedLead.expected_price || 0,
+            created_at: new Date().toISOString()
+        };
+        setStorage('customers', [...customers, newCust]);
+    }
+    return updatedLead;
+};
+
+export const deleteLead = async (id) => {
+    const leads = getStorage('leads');
+    setStorage('leads', leads.filter(l => l.id !== id));
+};
+
+export const deleteLeadWithLog = async (id, employeeId) => {
+    const leads = getStorage('leads');
+    const lead = leads.find(l => l.id === id);
+    if (!lead) return;
+
+    const users = getStorage('users');
+    const staff = users.find(u => u.id === employeeId);
+
+    await createActivity({
+        type: 'Lead Deleted',
+        employee_name: staff ? staff.name : 'Unknown',
+        employee_id: staff ? staff.employee_id : '---',
+        company_name: lead.company_name,
+        contact_person: lead.contact_person,
+        contact_no: lead.phone,
+        lead_id: id,
+        notes: `Permanently removed lead from system`
+    });
+
+    setStorage('leads', leads.filter(l => l.id !== id));
+};
+
+
+// ==========================================
+// 3. REMINDERS & FOLLOW-UPS
+// ==========================================
+
+export const getFollowUps = async () => {
+    await delay(400);
+    const reminders = getStorage('follow_ups');
+    const leads = getStorage('leads');
+
+    return reminders.map(r => ({
+        ...r,
+        leads: leads.find(l => l.id === r.lead_id)
+    })).sort((a,b) => new Date(a.follow_up_date) - new Date(b.follow_up_date));
+};
+
+export const createFollowUp = async (data) => {
+    const reminders = getStorage('follow_ups');
+    const newR = { ...data, id: 'rem_' + Math.random().toString(36).substr(2, 5) };
+    setStorage('follow_ups', [...reminders, newR]);
+    return newR;
+};
+
+export const deleteFollowUp = async (id) => {
+    const reminders = getStorage('follow_ups');
+    setStorage('follow_ups', reminders.filter(r => r.id !== id));
+};
+
+
+// ==========================================
+// 4. CUSTOMER DATABASE
+// ==========================================
+
+export const getCustomers = async () => {
+    await delay(400);
+    return getStorage('customers');
