@@ -117,4 +117,3 @@ export default function FollowUpModal({ isOpen, onClose, lead }) {
     );
 }
 
-

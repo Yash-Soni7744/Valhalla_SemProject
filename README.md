@@ -46,4 +46,3 @@ The app will automatically seed an Admin user on first load.
 A `schema.sql` file is included in the root directory for reference if you wish to connect this to a real PostgreSQL/Supabase backend in the future.
 
 The frontend is currently using `services/api.ts` to mock these tables using `localStorage`. To connect to a real backend, replace the functions in `services/api.ts` with actual API calls.
-

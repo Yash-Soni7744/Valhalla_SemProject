@@ -244,4 +244,3 @@ export default function LeadForm({ initialData, onSubmit, isEditing = false }) {
     );
 }
 
-

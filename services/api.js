@@ -367,3 +367,70 @@ export const updateLeadWithLog = async (leadId, updates, employeeId) => {
         notes: updates.status ? `Moved lead to stage: ${updates.status}` : 'Updated contact details'
     });
 
+    return updated;
+};
+
+export const createLeadWithLog = async (leadData, employeeId) => {
+    const newLead = await createLead(leadData);
+    const users = getStorage('users');
+    const staff = users.find(u => u.id === employeeId);
+
+    await createActivity({
+        type: 'New Lead',
+        employee_name: staff ? staff.name : 'Unknown',
+        employee_id: staff ? staff.employee_id : '---',
+        company_name: newLead.company_name,
+        contact_person: newLead.contact_person,
+        contact_no: newLead.phone,
+        lead_id: newLead.id,
+        notes: `Created new lead entry`
+    });
+
+    return newLead;
+};
+
+
+// Statistics for the 4 big cards on the Home Dashboard
+export const getDashboardStats = async () => {
+    await delay(500);
+    const leads = getStorage('leads');
+    const customers = getStorage('customers');
+    const followUps = getStorage('follow_ups');
+    const today = new Date().toISOString().split('T')[0];
+
+    return {
+        totalLeads: leads.length,
+        newLeads: leads.filter(l => l.status === 'New').length,
+        convertedCustomers: customers.length,
+        followUpsToday: followUps.filter(f => f.follow_up_date === today).length
+    };
+};
+
+export const bulkAssignLeads = async (leadIds, employeeId) => {
+    await delay(800);
+    const leads = getStorage('leads');
+    const users = getStorage('users');
+    const staff = users.find(u => u.id === employeeId);
+
+    const updatedLeads = leads.map(lead => {
+        if (leadIds.includes(lead.id)) {
+            return { ...lead, assigned_to: employeeId };
+        }
+        return lead;
+    });
+
+    setStorage('leads', updatedLeads);
+
+    // Also log this bulk action
+    await createActivity({
+        type: 'Bulk Assignment',
+        employee_name: 'Admin System',
+        employee_id: 'SYSTEM',
+        company_name: 'Multiple',
+        contact_person: `${leadIds.length} Leads`,
+        contact_no: '---',
+        notes: `Assigned ${leadIds.length} leads to ${staff ? staff.name : 'Unknown'}`
+    });
+};
+
+
