@@ -91,7 +91,7 @@ export default function UsersPage() {
             try {
                 const response = await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, templateParams, EMAILJS_PUBKEY);
                 console.log('SUCCESS!', response.status, response.text);
-                alert(`User created! Welcome email successfully sent to testing address.`);
+                alert(`User created! Welcome email successfully sent.`);
             } catch (err) {
                 console.warn('EmailJS failed (Likely missing credentials, but user was created in system):', err);
                 alert(`User created! Note: Automated email failed (missing EmailJS credentials). The password is: ${password}`);

@@ -33,29 +33,47 @@ const setStorage = (key, data) => {
  * Credentials: admin@miestilo.com / admin
  */
 const initializeDatabase = () => {
-    const users = getStorage('users');
+    let users = getStorage('users');
+    let leads = getStorage('leads');
+    
+    // Seed Users if not populated
     if (users.length === 0) {
-        const defaultAdmin = {
-            id: 'admin_001',
-            name: 'Master Admin',
-            email: 'admin@miestilo.com',
-            password: 'admin',
-            role: 'admin',
-            employee_id: 'MIS000',
-            created_at: new Date().toISOString()
-        };
-        setStorage('users', [defaultAdmin]);
+        users = [
+            { id: 'admin_001', name: 'Master Admin', email: 'admin@miestilo.com', password: 'admin', role: 'admin', employee_id: 'MIS000', created_at: new Date().toISOString() },
+            { id: 'user_002', name: 'John Doe', email: 'john@miestilo.com', password: 'password', role: 'employee', employee_id: 'MIS001', created_at: new Date().toISOString() },
+            { id: 'user_003', name: 'Sarah Smith', email: 'sarah@miestilo.com', password: 'password', role: 'employee', employee_id: 'MIS002', created_at: new Date().toISOString() },
+            { id: 'user_004', name: 'Mike Johnson', email: 'mike@miestilo.com', password: 'password', role: 'employee', employee_id: 'MIS003', created_at: new Date().toISOString() }
+        ];
+        setStorage('users', users);
     } else {
         // MIGRATION: Ensure all existing users have an employee_id
         let changed = false;
         users.forEach((u, index) => {
             if (!u.employee_id) {
-                // Generate a simple ID based on their position if it's missing (e.g. MIS001)
                 u.employee_id = 'MIS' + String(index).padStart(3, '0');
                 changed = true;
             }
         });
         if (changed) setStorage('users', users);
+    }
+
+    // Seed Leads if empty
+    if (leads.length === 0) {
+        const dummyLeads = [
+            { id: 'lead_001', company_name: 'Tech Corp', contact_person: 'Alice Brown', phone: '1234567890', email: 'alice@techcorp.com', status: 'New', assigned_to: 'user_002', expected_price: 5000, lead_source: 'Website', created_at: new Date().toISOString() },
+            { id: 'lead_002', company_name: 'Design Pro', contact_person: 'Bob White', phone: '9876543210', email: 'bob@designpro.com', status: 'In Progress', assigned_to: 'user_003', expected_price: 3200, lead_source: 'Referral', created_at: new Date().toISOString() },
+            { id: 'lead_003', company_name: 'Marketing Plus', contact_person: 'Charlie Green', phone: '5551234567', email: 'charlie@marketingplus.com', status: 'Follow Up', assigned_to: 'user_004', expected_price: 8000, lead_source: 'Social Media', created_at: new Date().toISOString() },
+            { id: 'lead_004', company_name: 'Retail giants', contact_person: 'Diana Prince', phone: '9000100010', email: 'diana@retailg.com', status: 'New', assigned_to: 'user_002', expected_price: 15000, lead_source: 'Direct Mail', created_at: new Date().toISOString() },
+            { id: 'lead_005', company_name: 'Foodies Ltd', contact_person: 'Eve Adams', phone: '9888777666', email: 'eve@foodies.com', status: 'Converted', assigned_to: 'user_003', expected_price: 2500, lead_source: 'Website', created_at: new Date().toISOString() },
+            { id: 'lead_006', company_name: 'Auto Motors', contact_person: 'Frank Castle', phone: '2223334444', email: 'frank@automotors.com', status: 'Lost', assigned_to: 'user_004', expected_price: 10000, lead_source: 'Trade Show', created_at: new Date().toISOString() },
+            { id: 'lead_007', company_name: 'Edu World', contact_person: 'George King', phone: '8005551212', email: 'george@eduworld.com', status: 'In Progress', assigned_to: 'admin_001', expected_price: 6000, lead_source: 'Referral', created_at: new Date().toISOString() },
+            { id: 'lead_008', company_name: 'FinTech Solutions', contact_person: 'Helen Troy', phone: '4005006000', email: 'helen@fintech.com', status: 'Follow Up', assigned_to: 'user_002', expected_price: 12000, lead_source: 'Website', created_at: new Date().toISOString() }
+        ];
+        setStorage('leads', dummyLeads);
+
+        // Add the converted lead to customers automatically
+        const customers = getStorage('customers');
+        setStorage('customers', [...customers, { id: 'lead_005', company_name: 'Foodies Ltd', total_orders: 1, total_order_value: 2500, created_at: new Date().toISOString() }]);
     }
 };
 
