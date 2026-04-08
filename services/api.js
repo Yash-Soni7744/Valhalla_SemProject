@@ -1,8 +1,7 @@
 /**
  * THE CRM ENGINE (API SERVICE)
  * 
- * Purpose: This file acts as the "Brain" of your software. 
- * Since we don't have a backend server (like Node.js or Python), 
+ * Purpose: This file acts as the "Brain" of your software.  
  * we use the browser's 'localStorage' to save all your data.
  * 
  * How to explain this in your Evaluation:
@@ -35,7 +34,7 @@ const setStorage = (key, data) => {
 const initializeDatabase = () => {
     let users = getStorage('users');
     let leads = getStorage('leads');
-    
+
     // Seed Users if not populated
     if (users.length === 0) {
         users = [
@@ -85,14 +84,14 @@ if (typeof window !== 'undefined') initializeDatabase();
 // ==========================================
 
 export const getUsers = async () => {
-    await delay(400); 
+    await delay(400);
     return getStorage('users');
 };
 
 export const createUser = async (user) => {
     await delay(500);
     const users = getStorage('users');
-    
+
     // Automatic Employee ID generation (e.g. MIS003)
     // We count existing users and add 1 to get the next number
     const nextNumber = users.length;
@@ -119,7 +118,7 @@ export const updateUser = async (id, updates) => {
     const users = getStorage('users');
     const index = users.findIndex(u => u.id === id);
     if (index === -1) return null;
-    
+
     users[index] = { ...users[index], ...updates };
     setStorage('users', users);
     return users[index];
@@ -138,9 +137,9 @@ export const getLeads = async () => {
 
     return leads.map(lead => {
         const staff = users.find(u => u.id === lead.assigned_to);
-        return { 
-            ...lead, 
-            assigned_to_name: staff ? staff.name : 'Unassigned' 
+        return {
+            ...lead,
+            assigned_to_name: staff ? staff.name : 'Unassigned'
         };
     }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 };
@@ -244,7 +243,7 @@ export const getFollowUps = async () => {
     return reminders.map(r => ({
         ...r,
         leads: leads.find(l => l.id === r.lead_id)
-    })).sort((a,b) => new Date(a.follow_up_date) - new Date(b.follow_up_date));
+    })).sort((a, b) => new Date(a.follow_up_date) - new Date(b.follow_up_date));
 };
 
 export const createFollowUp = async (data) => {
@@ -360,7 +359,7 @@ export const updateActivity = async (id, updates) => {
     const logs = getStorage('activities');
     const index = logs.findIndex(l => l.id === id);
     if (index === -1) return null;
-    
+
     logs[index] = { ...logs[index], ...updates };
     setStorage('activities', logs);
     return logs[index];

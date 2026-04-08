@@ -55,7 +55,8 @@ export default function LeadForm({ initialData, onSubmit, isEditing = false }) {
      */
     useEffect(() => {
         if (initialData) {
-            setFormData(initialData); // "Put the old values into the state"
+            // Merge initial data with default values to avoid 'undefined' inputs
+            setFormData(prev => ({ ...prev, ...initialData })); 
         }
         
         // Also fetch the list of employees for the 'Assigned To' dropdown

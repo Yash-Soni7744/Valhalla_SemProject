@@ -19,6 +19,7 @@ const Input = React.forwardRef(
                 )}
                 ref={ref}
                 {...props}
+                value={props.value ?? ""}
             />
         )
     }
